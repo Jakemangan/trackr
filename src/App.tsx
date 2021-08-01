@@ -15,6 +15,9 @@ import firebase from "firebase/app"
 import 'firebase/firestore';
 import 'firebase/auth';
 import { useAuthState } from "react-firebase-hooks/auth";
+import {FirebaseAuthProvider, useFirebaseAuth} from "./context/Context";
+import "./index.scss";
+import Navbar from "./components/Navbar/Navbar";
 
 firebase.initializeApp({
     apiKey: "AIzaSyB-kCwDo38kkrm0WPFgOxAXcKweqYNvFHY",
@@ -27,44 +30,47 @@ firebase.initializeApp({
 
 const auth = firebase.auth();
 
-
 function App() {
-    const [user] = useAuthState(auth);
+
+    const user = useFirebaseAuth();
+    console.log("user", user);
+    // const [value, loading] = useAuthState(auth);
+    // let displayApp = false;
+    // console.log("displayApp: ", displayApp);
+    let displayApp = true;
+
+    useEffect(() => {
+        firebase.auth().onAuthStateChanged(authUser => {
+            authUser ? localStorage.setItem("userIsLogged", String(true)) : localStorage.removeItem("userIsLogged");
+        })
+    })
 
     return (
         <>
-            <Switch>
-                <Route path="/" exact>
-                    {user ? <Dashboard/> : <Login/> }
-                </Route>
-                <Route path="/dashboard">
-                    <Dashboard/>
-                </Route>
-                <Route path="/login">
-                    <Login/>
-                </Route>
-            </Switch>
-        </>
-    )
+            {displayApp &&
+                <>
+                    <Navbar>
 
-    // return (
-    //     <>
-    //         <Auth.UserContextProvider supabaseClient={supabaseClient}>
-    //             <Switch>
-    //                 <Route path="/" exact>
-    //                     <Container supabaseClient={supabaseClient}>
-    //                         <Redirect to="/login"/>
-    //                     </Container>
-    //                 </Route>
-    //                 <ProtectedRoute path="/protected" component={Dashboard}/>
-    //                 <Route path="/login">
-    //                     <Login/>
-    //                 </Route>
-    //             </Switch>
-    //
-    //         </Auth.UserContextProvider>
-    //     </>
-    // );
+                    </Navbar>
+                    <Switch>
+                        <Route path="/" exact>
+                            {user ? <Dashboard/> : <Login/> }
+                        </Route>
+                        <Route path="/dashboard">
+                            <Dashboard/>
+                        </Route>
+                        <Route path="/login">
+                            <Login/>
+                        </Route>
+                    </Switch>
+                </>
+            }
+            {!displayApp &&
+            <h4>Loading...</h4>
+            }
+        </>
+
+    )
 }
 
 export default App;
